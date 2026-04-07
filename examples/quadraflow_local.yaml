@@ -1,0 +1,45 @@
+# quadraflow_local.yaml - Ollama（ローカルLLM）用サンプル設定
+# Ollamaをインストールして `ollama pull gemma2:2b` を実行してから使ってください
+# プライバシー重視・オフライン動作可能
+
+llm:
+  provider: ollama
+  model: gemma2:2b          # 軽量モデル（メモリ少なめ）
+  # model: llama3.1:8b      # 高品質モデル（VRAM 8GB以上推奨）
+  # model: qwen2.5:14b      # 高品質・多言語対応（VRAM 16GB以上推奨）
+  base_url: http://localhost:11434/v1
+  api_key: ollama            # Ollamaはapi_key不要だが値が必要
+  temperature: 0.7
+  max_tokens: 2048
+
+agents:
+  - id: local-assistant
+    name: "Local Assistant"
+    heartbeat: 30m
+    tools: [file_read, file_write, shell]
+    prompt: |
+      あなたはローカルで動作するAIアシスタントです。
+      外部APIに依存せず、ローカルの作業を支援します。
+      workspace/tasks.txt を読んでタスクを処理してください。
+
+  - id: file-organizer
+    name: "File Organizer"
+    heartbeat: 60m
+    tools: [file_read, file_write, shell]
+    prompt: |
+      あなたはファイル整理エージェントです。
+      workspace/inbox/ 内のファイルを読んで内容を分類し、
+      workspace/organized/ に適切なフォルダを作って整理してください。
+
+# Telegramは省略可能（コメントアウトで無効化）
+# channels:
+#   telegram:
+#     token: "YOUR_BOT_TOKEN"
+#     allowed_users: [YOUR_USER_ID]
+
+web:
+  host: "127.0.0.1"    # ローカルのみアクセス可能
+  port: 8765
+
+data_dir: "./data"
+log_level: "INFO"

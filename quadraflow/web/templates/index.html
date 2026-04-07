@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QUADRAFLOW Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .logo span { color: var(--purple); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .agent-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s, transform 0.1s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .agent-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .agent-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .agent-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .agent-id {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: monospace;
+  }
+
+  .status-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-idle { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .status-running { background: rgba(88, 166, 255, 0.15); color: var(--accent); animation: pulse 1s infinite; }
+  .status-error { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .status-disabled { background: rgba(139, 148, 158, 0.15); color: var(--text-muted); }
+
+  .agent-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .agent-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .tools-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tool-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--purple);
+  }
+
+  .agent-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .schedule-table th {
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .schedule-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: monospace;
+  }
+
+  .schedule-table tr:hover td { background: var(--surface2); }
+
+  .event-log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .event-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .event-item:last-child { border-bottom: none; }
+
+  .event-time {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 11px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  .event-content { flex: 1; }
+  .event-agent { color: var(--accent); font-weight: 600; }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    z-index: 999;
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">QUADRA<span>FLOW</span></div>
+  <div class="topbar-right">
+    <span><span class="status-dot"></span> システム稼働中</span>
+    <span id="clock">{{ now }}</span>
+    <span id="sse-status" style="color: var(--yellow);">接続中...</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="section-title">稼働エージェント</div>
+
+  {% if agents %}
+  <div class="agents-grid">
+    {% for agent in agents %}
+    <a href="/agent/{{ agent.id }}" class="agent-card">
+      <div class="agent-card-header">
+        <div>
+          <div class="agent-name">{{ agent.name }}</div>
+          <div class="agent-id">{{ agent.id }}</div>
+        </div>
+        <span class="status-badge status-{{ agent.status }}" id="status-{{ agent.id }}">
+          {% if agent.status == 'idle' %}待機中
+          {% elif agent.status == 'running' %}実行中
+          {% elif agent.status == 'error' %}エラー
+          {% else %}無効{% endif %}
+        </span>
+      </div>
+
+      <div class="agent-meta">
+        <span>ハートビート: {{ agent.heartbeat }}</span>
+        <span>ツール: {{ agent.tools | length }}個</span>
+      </div>
+
+      <div class="tools-list">
+        {% for tool in agent.tools %}
+        <span class="tool-tag">{{ tool }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="agent-footer">
+        <span>最終実行: {{ agent.last_run[:16] if agent.last_run else '未実行' }}</span>
+        <span>次回: {{ agent.next_run[:16] if agent.next_run else '-' }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>エージェントが見つかりません</h3>
+    <p>quadraflow.yaml にエージェントを設定してください</p>
+  </div>
+  {% endif %}
+
+  <div class="section-title">スケジュール</div>
+  <div class="event-log" style="max-height: 200px;">
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>エージェント</th>
+          <th>インターバル</th>
+          <th>次回実行</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in schedule %}
+        <tr>
+          <td>{{ s.agent_name }}</td>
+          <td>{{ s.heartbeat }}</td>
+          <td>{{ s.next_run[:16] if s.next_run else '-' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" style="color: var(--text-muted); text-align: center;">スケジュールなし</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-title">リアルタイムイベント</div>
+  <div class="event-log" id="event-log">
+    <div class="empty-state" style="padding: 20px;">
+      <p>エージェントの実行イベントがここに表示されます...</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// 時刻更新
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleString('ja-JP');
+}, 1000);
+
+// SSE接続
+const eventSource = new EventSource('/events');
+const sseStatus = document.getElementById('sse-status');
+const eventLog = document.getElementById('event-log');
+
+eventSource.addEventListener('connected', () => {
+  sseStatus.style.color = 'var(--green)';
+  sseStatus.textContent = 'リアルタイム同期中';
+});
+
+eventSource.addEventListener('agent_event', (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'log') {
+    addEvent(data);
+    updateAgentStatus(data);
+  }
+});
+
+eventSource.onerror = () => {
+  sseStatus.style.color = 'var(--red)';
+  sseStatus.textContent = '接続エラー（再接続中...）';
+};
+
+function addEvent(data) {
+  const emptyState = eventLog.querySelector('.empty-state');
+  if (emptyState) emptyState.remove();
+
+  const item = document.createElement('div');
+  item.className = 'event-item';
+  const time = data.finished_at ? data.finished_at.substring(0, 16) : new Date().toLocaleString('ja-JP');
+  const success = data.success ? '✓' : '✗';
+  const color = data.success ? 'var(--green)' : 'var(--red)';
+  item.innerHTML = `
+    <div class="event-time">${time}</div>
+    <div class="event-content">
+      <span class="event-agent">${data.agent_id}</span>
+      <span style="color: ${color}; margin: 0 8px;">${success}</span>
+      <span>${data.summary || data.error || ''}</span>
+    </div>
+  `;
+  eventLog.insertBefore(item, eventLog.firstChild);
+
+  // 最大50件
+  const items = eventLog.querySelectorAll('.event-item');
+  if (items.length > 50) items[items.length - 1].remove();
+}
+
+function updateAgentStatus(data) {
+  const badge = document.getElementById(`status-${data.agent_id}`);
+  if (badge) {
+    badge.className = `status-badge status-idle`;
+    badge.textContent = '待機中';
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+</script>
+</body>
+</html>

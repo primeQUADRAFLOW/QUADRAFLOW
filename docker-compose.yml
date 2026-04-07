@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  quadraflow:
+    build: .
+    container_name: quadraflow
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    volumes:
+      # 設定ファイル（必須）
+      - ./quadraflow.yaml:/app/config/quadraflow.yaml:ro
+      # データ永続化
+      - ./data:/app/data
+      # ワークスペース
+      - ./workspace:/app/workspace
+    environment:
+      # APIキーは環境変数で渡す
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - quadraflow-net
+
+  # Ollamaコンテナ（ローカルLLM使用時）
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: quadraflow-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+  #   networks:
+  #     - quadraflow-net
+
+networks:
+  quadraflow-net:
+    driver: bridge
+
+# volumes:
+#   ollama_data:
