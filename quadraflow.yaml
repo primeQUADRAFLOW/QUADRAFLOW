@@ -1,0 +1,31 @@
+# quadraflow.yaml - QUADRAFLOW設定ファイル
+
+llm:
+  provider: ollama
+  model: gemma2:2b
+  base_url: http://localhost:11434/v1
+
+agents:
+  - id: researcher
+    name: "AI Researcher"
+    heartbeat: 60m
+    tools: [web_search, file_write]
+    prompt: "最新のAI技術ニュースをリサーチして日本語でレポートを書く"
+
+  - id: writer
+    name: "Content Writer"
+    heartbeat: 120m
+    tools: [file_read, file_write, send_message]
+    prompt: "researcherのレポートを読んでわかりやすいブログ記事を書く"
+
+channels:
+  telegram:
+    token: "${TELEGRAM_BOT_TOKEN}"
+    allowed_users: [123456789]
+
+web:
+  host: "0.0.0.0"
+  port: 8765
+
+data_dir: "./data"
+log_level: "INFO"

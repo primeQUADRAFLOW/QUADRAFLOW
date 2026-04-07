@@ -1,0 +1,52 @@
+# quadraflow.yaml - OpenAI/Groq/Gemini用サンプル設定
+# コピーしてルートに置いて使ってください
+
+llm:
+  provider: groq
+  model: llama-3.3-70b-versatile
+  api_key: "${GROQ_API_KEY}"
+  temperature: 0.7
+  max_tokens: 4096
+
+agents:
+  - id: researcher
+    name: "AI Researcher"
+    heartbeat: 60m
+    tools: [web_search, web_fetch, file_write]
+    prompt: |
+      あなたはAI技術専門のリサーチャーです。
+      最新のAI・LLM・エージェント技術のニュースをリサーチして
+      日本語でMarkdownレポートを作成してください。
+      レポートはworkspace/reports/YYYY-MM-DD_research.md に保存してください。
+
+  - id: writer
+    name: "Content Writer"
+    heartbeat: 120m
+    tools: [file_read, file_write, send_message]
+    prompt: |
+      あなたはコンテンツライターです。
+      researcherが作成したレポート（workspace/reports/）を読んで
+      一般読者向けのわかりやすいブログ記事を書いてください。
+      完成したらresearcherにsend_messageで通知してください。
+
+  - id: analyst
+    name: "Data Analyst"
+    heartbeat: 180m
+    tools: [file_read, file_write, shell]
+    prompt: |
+      あなたはデータアナリストです。
+      workspace内のデータやレポートを分析して
+      インサイトを抽出してください。
+      必要に応じてPythonスクリプトを実行して分析を行ってください。
+
+channels:
+  telegram:
+    token: "${TELEGRAM_BOT_TOKEN}"
+    allowed_users: [123456789]
+
+web:
+  host: "0.0.0.0"
+  port: 8765
+
+data_dir: "./data"
+log_level: "INFO"
