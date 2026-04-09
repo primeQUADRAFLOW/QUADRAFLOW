@@ -48,7 +48,7 @@ class HeartbeatScheduler:
         )
 
         # 次回実行時刻をエージェントに設定
-        if job.next_run_time:
+        if getattr(job, 'next_run_time', None):
             agent.next_run = job.next_run_time.isoformat()
 
         logger.info(
@@ -68,7 +68,7 @@ class HeartbeatScheduler:
 
         # 次回実行時刻を更新
         job = self.scheduler.get_job(f"heartbeat_{agent_id}")
-        if job and job.next_run_time:
+        if job and getattr(job, 'next_run_time', None):
             agent.next_run = job.next_run_time.isoformat()
 
     def _on_job_event(self, event):
